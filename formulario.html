@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Envíos — Chattigo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; padding: 2rem 1rem; }
+    .card { background: #fff; border-radius: 12px; border: 1px solid #e5e5e5; padding: 2rem; width: 100%; max-width: 520px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+    .header-icon { width: 36px; height: 36px; border-radius: 8px; background: #EBF3FC; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .header-title { font-size: 16px; font-weight: 600; }
+    .header-sub { font-size: 12px; color: #666; margin-top: 1px; }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; background: #EBF3FC; color: #185FA5; margin-left: 6px; font-weight: 500; }
+    .divider { height: 1px; background: #f0f0f0; margin: 1.25rem 0; }
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: 13px; color: #555; margin-bottom: 5px; font-weight: 500; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px;
+      font-size: 14px; color: #1a1a1a; background: #fff; font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #185FA5; }
+    .field textarea { resize: vertical; min-height: 72px; }
+    .field .readonly { background: #f9f9f9; color: #888; cursor: not-allowed; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .required { color: #E24B4A; margin-left: 2px; }
+    .btn { width: 100%; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; margin-top: 0.5rem; transition: background 0.15s; }
+    .btn-primary { background: #185FA5; color: #fff; }
+    .btn-primary:hover { background: #0C447C; }
+    .btn-primary:disabled { background: #93b8d8; cursor: not-allowed; }
+    .btn-secondary { background: #f5f5f5; color: #333; border: 1px solid #ddd; }
+    .btn-secondary:hover { background: #ececec; }
+    .success { display: none; text-align: center; padding: 1rem 0; }
+    .success-icon { width: 52px; height: 52px; border-radius: 50%; background: #EAF3DE; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+    .success h2 { font-size: 16px; margin-bottom: 6px; }
+    .success p { font-size: 13px; color: #666; line-height: 1.5; }
+    .error-msg { display: none; color: #A32D2D; font-size: 13px; margin-top: 8px; padding: 8px 12px; background: #FCEBEB; border-radius: 8px; }
+    .spinner { display: none; width: 18px; height: 18px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <div class="header-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round">
+        <path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">Control de envíos <span class="badge">Chattigo</span></div>
+      <div class="header-sub">Completa los datos antes de realizar el envío</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <div id="form-body">
+    <div class="field">
+      <label>Nombre del envío <span class="required">*</span></label>
+      <input type="text" id="nombre" placeholder="Ej: MBA Julio 2025 — Recuperación de cartera">
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Asesor <span class="required">*</span></label>
+        <select id="asesor">
+          <option value="">Seleccionar...</option>
+          <!-- EDITAR: agrega aquí los nombres de tus asesoras -->
+          <option>Ana García</option>
+          <option>Luis Torres</option>
+          <option>María Ríos</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tipo / Motivo <span class="required">*</span></label>
+        <select id="tipo">
+          <option value="">Seleccionar...</option>
+          <!-- EDITAR: ajusta los tipos según tu operación -->
+          <option>Promocional</option>
+          <option>Recordatorio de pago</option>
+          <option>Cobranza</option>
+          <option>Informativo</option>
+          <option>Bienvenida</option>
+          <option>Otro</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Cantidad de envíos <span class="required">*</span></label>
+        <input type="number" id="cantidad" placeholder="0" min="1">
+      </div>
+      <div class="field">
+        <label>Fecha y hora</label>
+        <input class="readonly" type="text" id="fecha" readonly>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Observaciones</label>
+      <textarea id="observaciones" placeholder="Algún detalle adicional del envío..."></textarea>
+    </div>
+
+    <div class="divider"></div>
+    <div id="error-msg" class="error-msg"></div>
+    <button class="btn btn-primary" id="btn-enviar" onclick="enviarFormulario()">
+      <span id="btn-text">Registrar y notificar supervisores</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+  </div>
+
+  <div class="success" id="success-msg">
+    <div class="success-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+    </div>
+    <h2>Envío registrado correctamente</h2>
+    <p>Se guardó en el historial de Google Sheets<br>y se notificó a los supervisores por correo.</p>
+    <button class="btn btn-secondary" style="margin-top:1rem" onclick="resetFormulario()">Registrar otro envío</button>
+  </div>
+</div>
+
+<script>
+  // =============================================
+  // IMPORTANTE: Reemplaza esta URL con la URL
+  // de tu Web App de Google Apps Script
+  // =============================================
+  const APPS_SCRIPT_URL = "https://script.google.com/a/macros/esan.edu.pe/s/AKfycbxyMjADYilTVWY6PdS9RLGTPYgTm-YAET6p7ged7cnNNXM3oyMBYguvbVneQQUt6ALF/exec";
+
+  // Fecha automática al cargar
+  function setFecha() {
+    const d = new Date();
+    const opts = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    document.getElementById('fecha').value = d.toLocaleDateString('es-PE', opts);
+  }
+  setFecha();
+
+  function mostrarError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function ocultarError() {
+    document.getElementById('error-msg').style.display = 'none';
+  }
+
+  function setLoading(loading) {
+    document.getElementById('btn-text').style.display = loading ? 'none' : 'inline';
+    document.getElementById('spinner').style.display = loading ? 'block' : 'none';
+    document.getElementById('btn-enviar').disabled = loading;
+  }
+
+  async function enviarFormulario() {
+    ocultarError();
+    const nombre = document.getElementById('nombre').value.trim();
+    const asesor = document.getElementById('asesor').value;
+    const tipo = document.getElementById('tipo').value;
+    const cantidad = document.getElementById('cantidad').value;
+    const fecha = document.getElementById('fecha').value;
+    const observaciones = document.getElementById('observaciones').value.trim();
+
+    if (!nombre || !asesor || !tipo || !cantidad) {
+      mostrarError('Por favor completa todos los campos obligatorios (*).');
+      return;
+    }
+    if (parseInt(cantidad) < 1) {
+      mostrarError('La cantidad debe ser mayor a 0.');
+      return;
+    }
+
+    setLoading(true);
+    const datos = { nombre, asesor, tipo, cantidad, fecha, observaciones };
+
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(datos)
+      });
+      const result = await response.json();
+      if (result.status === 'ok') {
+        document.getElementById('form-body').style.display = 'none';
+        document.getElementById('success-msg').style.display = 'block';
+      } else {
+        mostrarError('Hubo un error al registrar. Intenta de nuevo.');
+      }
+    } catch (e) {
+      mostrarError('No se pudo conectar. Verifica tu conexión o contacta a soporte.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function resetFormulario() {
+    document.getElementById('nombre').value = '';
+    document.getElementById('asesor').value = '';
+    document.getElementById('tipo').value = '';
+    document.getElementById('cantidad').value = '';
+    document.getElementById('observaciones').value = '';
+    setFecha();
+    document.getElementById('form-body').style.display = 'block';
+    document.getElementById('success-msg').style.display = 'none';
+  }
+</script>
+</body>
+</html>
