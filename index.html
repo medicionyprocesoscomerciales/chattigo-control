@@ -16,14 +16,9 @@
     .divider { height: 1px; background: #f0f0f0; margin: 1.25rem 0; }
     .field { margin-bottom: 1rem; }
     .field label { display: block; font-size: 13px; color: #555; margin-bottom: 5px; font-weight: 500; }
-    .field input, .field select, .field textarea {
-      width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px;
-      font-size: 14px; color: #1a1a1a; background: #fff; font-family: inherit;
-      transition: border-color 0.15s;
-    }
-    .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #185FA5; }
-    .field textarea { resize: vertical; min-height: 72px; }
-    .field .readonly { background: #f9f9f9; color: #888; cursor: not-allowed; }
+    .field input, .field select { width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; color: #1a1a1a; background: #fff; font-family: inherit; transition: border-color 0.15s; }
+    .field input:focus, .field select:focus { outline: none; border-color: #185FA5; }
+    .readonly { background: #f9f9f9 !important; color: #888 !important; cursor: not-allowed !important; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .required { color: #E24B4A; margin-left: 2px; }
     .btn { width: 100%; padding: 11px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; margin-top: 0.5rem; transition: background 0.15s; }
@@ -39,6 +34,8 @@
     .error-msg { display: none; color: #A32D2D; font-size: 13px; margin-top: 8px; padding: 8px 12px; background: #FCEBEB; border-radius: 8px; }
     .spinner { display: none; width: 18px; height: 18px; border: 2px solid #fff; border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .destinatario-tag { display: inline-block; font-size: 11px; padding: 3px 8px; background: #EBF3FC; color: #185FA5; border-radius: 20px; margin: 3px 2px; }
+    .destinatarios-box { margin-top: 6px; min-height: 28px; }
   </style>
 </head>
 <body>
@@ -67,17 +64,19 @@
         <label>Asesor <span class="required">*</span></label>
         <select id="asesor">
           <option value="">Seleccionar...</option>
-          <!-- EDITAR: agrega aquí los nombres de tus asesoras -->
-          <option>Ana García</option>
-          <option>Luis Torres</option>
-          <option>María Ríos</option>
+          <option>Jose Jean Pool Aguilar Toro</option>
+          <option>Adriana Vilcapuma Cancho</option>
+          <option>Catherine Palacios Vargas</option>
+          <option>Stephany Huaringa Fierro</option>
+          <option>Shary Aned Olayunca Cornelio</option>
+          <option>Marcela Mitshy Sarahy Del Carpio Sebastian</option>
+          <option>Natalie Allison Cantinet Huaman</option>
         </select>
       </div>
       <div class="field">
         <label>Tipo / Motivo <span class="required">*</span></label>
         <select id="tipo">
           <option value="">Seleccionar...</option>
-          <!-- EDITAR: ajusta los tipos según tu operación -->
           <option>Promocional</option>
           <option>Recordatorio de pago</option>
           <option>Cobranza</option>
@@ -100,8 +99,20 @@
     </div>
 
     <div class="field">
-      <label>Observaciones</label>
-      <textarea id="observaciones" placeholder="Algún detalle adicional del envío..."></textarea>
+      <label>Categoría <span class="required">*</span></label>
+      <select id="categoria" onchange="actualizarDestinatarios()">
+        <option value="">Seleccionar...</option>
+        <option>Diplomas</option>
+        <option>Diplomas Internacionales</option>
+        <option>PAE</option>
+        <option>PADE</option>
+        <option>Business Law</option>
+        <option>PEE</option>
+        <option>Quick Learning</option>
+        <option>CIE</option>
+        <option>Maestrías Especializadas</option>
+      </select>
+      <div class="destinatarios-box" id="destinatarios-box"></div>
     </div>
 
     <div class="divider"></div>
@@ -123,7 +134,20 @@
 </div>
 
 <script>
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxusI5JEoSNHXbUIiuxlWgxjvAPLShWoL7frANVUHZKfOSDWuitNeApyDwulMcQ6A/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcGdIWn2qfFG2j8LujC9QGOIIiM0R9rfCn3swkPEumAsywcnYonv4kI2CrCfnjiXM1/exec";
+
+  // Mapa de categoría → correos responsables
+  const CORREOS_POR_CATEGORIA = {
+    "Diplomas":                  ["jaguilart@esan.edu.pe"],
+    "Diplomas Internacionales":  ["jaguilart@esan.edu.pe"],
+    "PAE":                       ["avilcapuma@esan.edu.pe"],
+    "PADE":                      ["avilcapuma@esan.edu.pe"],
+    "Business Law":              ["cpalaciosv@esan.edu.pe"],
+    "PEE":                       ["shuaringa@esan.edu.pe"],
+    "Quick Learning":            ["solayunca@esan.edu.pe"],
+    "CIE":                       ["solayunca@esan.edu.pe"],
+    "Maestrías Especializadas":  ["mdelcarpio@esan.edu.pe", "ncantinet@esan.edu.pe"]
+  };
 
   function setFecha() {
     const d = new Date();
@@ -131,6 +155,17 @@
     document.getElementById('fecha').value = d.toLocaleDateString('es-PE', opts);
   }
   setFecha();
+
+  function actualizarDestinatarios() {
+    const cat = document.getElementById('categoria').value;
+    const box = document.getElementById('destinatarios-box');
+    if (!cat || !CORREOS_POR_CATEGORIA[cat]) {
+      box.innerHTML = '';
+      return;
+    }
+    const correos = CORREOS_POR_CATEGORIA[cat];
+    box.innerHTML = correos.map(c => `<span class="destinatario-tag">${c}</span>`).join('');
+  }
 
   function mostrarError(msg) {
     const el = document.getElementById('error-msg');
@@ -150,14 +185,14 @@
 
   function enviarFormulario() {
     ocultarError();
-    const nombre = document.getElementById('nombre').value.trim();
-    const asesor = document.getElementById('asesor').value;
-    const tipo = document.getElementById('tipo').value;
-    const cantidad = document.getElementById('cantidad').value;
-    const fecha = document.getElementById('fecha').value;
-    const observaciones = document.getElementById('observaciones').value.trim();
+    const nombre    = document.getElementById('nombre').value.trim();
+    const asesor    = document.getElementById('asesor').value;
+    const tipo      = document.getElementById('tipo').value;
+    const cantidad  = document.getElementById('cantidad').value;
+    const fecha     = document.getElementById('fecha').value;
+    const categoria = document.getElementById('categoria').value;
 
-    if (!nombre || !asesor || !tipo || !cantidad) {
+    if (!nombre || !asesor || !tipo || !cantidad || !categoria) {
       mostrarError('Por favor completa todos los campos obligatorios (*).');
       return;
     }
@@ -166,24 +201,24 @@
       return;
     }
 
+    const correos = (CORREOS_POR_CATEGORIA[categoria] || []).join(',');
+
     setLoading(true);
 
     const callbackName = 'cb_' + Date.now();
-    const params = new URLSearchParams({
-      nombre, asesor, tipo, cantidad, fecha, observaciones,
-      callback: callbackName
-    });
+    const params = new URLSearchParams({ nombre, asesor, tipo, cantidad, fecha, categoria, correos, callback: callbackName });
 
     const timeout = setTimeout(() => {
       delete window[callbackName];
       setLoading(false);
-      mostrarError('Tiempo de espera agotado. Verifica tu conexión e intenta de nuevo.');
+      mostrarError('Tiempo de espera agotado. Intenta de nuevo.');
     }, 15000);
 
     window[callbackName] = function(result) {
       clearTimeout(timeout);
       delete window[callbackName];
-      document.getElementById('jsonp-script')?.remove();
+      const s = document.getElementById('jsonp-script');
+      if (s) s.remove();
       setLoading(false);
       if (result && result.status === 'ok') {
         document.getElementById('form-body').style.display = 'none';
@@ -200,7 +235,7 @@
       clearTimeout(timeout);
       delete window[callbackName];
       setLoading(false);
-      mostrarError('No se pudo conectar con el servidor. Intenta de nuevo.');
+      mostrarError('No se pudo conectar. Intenta de nuevo.');
     };
     document.body.appendChild(script);
   }
@@ -210,7 +245,8 @@
     document.getElementById('asesor').value = '';
     document.getElementById('tipo').value = '';
     document.getElementById('cantidad').value = '';
-    document.getElementById('observaciones').value = '';
+    document.getElementById('categoria').value = '';
+    document.getElementById('destinatarios-box').innerHTML = '';
     setFecha();
     document.getElementById('form-body').style.display = 'block';
     document.getElementById('success-msg').style.display = 'none';
