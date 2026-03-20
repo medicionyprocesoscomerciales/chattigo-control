@@ -123,13 +123,8 @@
 </div>
 
 <script>
-  // =============================================
-  // IMPORTANTE: Reemplaza esta URL con la URL
-  // de tu Web App de Google Apps Script
-  // =============================================
   const APPS_SCRIPT_URL = "https://script.google.com/a/macros/esan.edu.pe/s/AKfycbxyMjADYilTVWY6PdS9RLGTPYgTm-YAET6p7ged7cnNNXM3oyMBYguvbVneQQUt6ALF/exec";
 
-  // Fecha automática al cargar
   function setFecha() {
     const d = new Date();
     const opts = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -153,7 +148,7 @@
     document.getElementById('btn-enviar').disabled = loading;
   }
 
-  async function enviarFormulario() {
+  function enviarFormulario() {
     ocultarError();
     const nombre = document.getElementById('nombre').value.trim();
     const asesor = document.getElementById('asesor').value;
@@ -172,25 +167,42 @@
     }
 
     setLoading(true);
-    const datos = { nombre, asesor, tipo, cantidad, fecha, observaciones };
 
-    try {
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify(datos)
-      });
-      const result = await response.json();
-      if (result.status === 'ok') {
+    const callbackName = 'cb_' + Date.now();
+    const params = new URLSearchParams({
+      nombre, asesor, tipo, cantidad, fecha, observaciones,
+      callback: callbackName
+    });
+
+    const timeout = setTimeout(() => {
+      delete window[callbackName];
+      setLoading(false);
+      mostrarError('Tiempo de espera agotado. Verifica tu conexión e intenta de nuevo.');
+    }, 15000);
+
+    window[callbackName] = function(result) {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      document.getElementById('jsonp-script')?.remove();
+      setLoading(false);
+      if (result && result.status === 'ok') {
         document.getElementById('form-body').style.display = 'none';
         document.getElementById('success-msg').style.display = 'block';
       } else {
         mostrarError('Hubo un error al registrar. Intenta de nuevo.');
       }
-    } catch (e) {
-      mostrarError('No se pudo conectar. Verifica tu conexión o contacta a soporte.');
-    } finally {
+    };
+
+    const script = document.createElement('script');
+    script.id = 'jsonp-script';
+    script.src = APPS_SCRIPT_URL + '?' + params.toString();
+    script.onerror = function() {
+      clearTimeout(timeout);
+      delete window[callbackName];
       setLoading(false);
-    }
+      mostrarError('No se pudo conectar con el servidor. Intenta de nuevo.');
+    };
+    document.body.appendChild(script);
   }
 
   function resetFormulario() {
